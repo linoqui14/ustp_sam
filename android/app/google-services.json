@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "743349798990",
+    "project_id": "ustp-sam",
+    "storage_bucket": "ustp-sam.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743349798990:android:80a8eec7050fd2010e5b1f",
+        "android_client_info": {
+          "package_name": "com.example.ustp_sam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "743349798990-2d6t9rq9kfp1odkjqp4t0gd31i96b1kb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ustp_sam",
+            "certificate_hash": "a5e38122c3eb62555ef11e3a40a6ad3fdead91f2"
+          }
+        },
+        {
+          "client_id": "743349798990-3ejm75nul40n19b0mnb1940fn03rt7do.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTDRhEoycv6zwfviOyfZxKRTYhVju4geU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "743349798990-3ejm75nul40n19b0mnb1940fn03rt7do.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
