@@ -123,7 +123,9 @@ class _HomeState extends State<Home>{
                                       int hrOut = ampmOut=="AM"?int.parse(timeOut.split(":")[0]):(timeOut.split(":")[0]=="12")?int.parse(timeOut.split(":")[0]):int.parse(timeOut.split(":")[0])+12;
                                       int minOut = int.parse(timeOut.split(":")[1]);
 
-                                      if(sensorTime.hour )
+                                      if(sensorTime.hour>=hr&&sensorTime.hour<=hrOut&&(((hr*60)+min)+30)<((sensorTime.hour*60)+min)){
+                                        print("Present");
+                                      }
 
                                     }
                                   });
