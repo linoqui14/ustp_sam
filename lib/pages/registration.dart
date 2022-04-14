@@ -1,15 +1,20 @@
+import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ustp_sam/controller/controller.dart';
 import 'package:ustp_sam/custom_widgets/custom_texfield.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ustp_sam/custom_widgets/custom_textbutton.dart';
 import 'package:ustp_sam/pages/login.dart';
 import 'package:ustp_sam/tools/my_colors.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
+import 'package:image_picker/image_picker.dart';
 import '../model/user_model.dart';
+import '../model/valid_users.dart';
 import '../tools/authentication.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'home.dart';
 class Registration extends StatefulWidget{
   const Registration({Key? key}) : super(key: key);
@@ -30,6 +35,22 @@ class _RegistrationState extends State<Registration>{
   TextEditingController school = TextEditingController();
   TextEditingController course = TextEditingController();
   TextEditingController section = TextEditingController();
+  bool isStudent = true;
+  final ImagePicker _picker = ImagePicker();
+  XFile? image;
+  Future uploadFile(String studentID) async {
+    if (image == null) return;
+    final destination = 'files/profiles';
+
+    try {
+      final ref = firebase_storage.FirebaseStorage.instance
+          .ref(destination)
+          .child(studentID);
+      await ref.putFile(File(image!.path));
+    } catch (e) {
+      print('error occured');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -50,15 +71,60 @@ class _RegistrationState extends State<Registration>{
         child: SingleChildScrollView(
           child: Column(
             children: [
+              Container(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text("Profile Picture",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30,color: MyColors.deadBlue),),
+                    CustomTextButton(
+                      color: MyColors.deadBlue,
+                      text: "Upload",
+                      onPressed: (){
+                        _picker.pickImage(source: ImageSource.gallery).then((value) {
+                          setState(() {
+                            image = value;
+                          });
+                        });
+                      },
+                    ),
+                    if(image!=null)
+                      CircleAvatar(
+                        radius: 80,
+                        backgroundImage: FileImage(File(image!.path)),
+                      )
+
+                  ],
+                ),
+              ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Student Information",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30,color: MyColors.deadBlue),),
+                  Text("Basic Information",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30,color: MyColors.deadBlue),),
                   Row(
                       children: [
                         Flexible(
                           child: CustomTextField(
+                            onChange: (value){
+                              ValidUserController.getUserFuture(id: value).then((value) {
+                                if(!value.exists)setState(() {
+                                  isStudent = true;
+                                });
+                                ValidUser validUser = ValidUser.toObject(value.data());
+                                if(validUser.userType==UserType.instructor){
+                                  setState(() {
+                                    isStudent = false;
+                                  });
+                                }
+                                else{
+                                  setState(() {
+                                    isStudent = true;
+                                  });
+                                }
+                              });
+                            },
                             controller: school,
                             color: MyColors.deadBlue,
                             rTopLeft:0 ,
@@ -67,14 +133,15 @@ class _RegistrationState extends State<Registration>{
                           ),
                         ),
                         Padding(padding: EdgeInsets.symmetric(horizontal:10 )),
-                        Flexible(
-                          child: CustomTextField(
-                            controller: section,
-                            color: MyColors.deadBlue,
-                            hint: "Section",
-                            padding: EdgeInsets.symmetric(horizontal: 0),
+                        if(isStudent)
+                          Flexible(
+                            child: CustomTextField(
+                              controller: section,
+                              color: MyColors.deadBlue,
+                              hint: "Section",
+                              padding: EdgeInsets.symmetric(horizontal: 0),
+                            ),
                           ),
-                        ),
 
                       ]
                   ),
@@ -192,7 +259,18 @@ class _RegistrationState extends State<Registration>{
                                     mobile.text.isNotEmpty
 
                                 ){
-                                  UserModel userModel = UserModel(courseID:course.text,section:section.text,fname: fname.text, lname: lname.text, email: email.text, mobileNumber: mobile.text, schoolID: school.text);
+
+                                  UserModel userModel = UserModel(courseID:course.text,section:section.text,fname: fname.text, lname: lname.text, email: email.text, mobileNumber: mobile.text, schoolID: school.text,profilePicLink: '');
+                                  uploadFile(userModel.schoolID);
+                                  Fluttertoast.showToast(
+                                      msg: "Please wait!",
+                                      toastLength: Toast.LENGTH_LONG,
+                                      gravity: ToastGravity.CENTER,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.red,
+                                      textColor: Colors.white,
+                                      fontSize: 16.0
+                                  );
                                   Authentication().registerUsingEmailPassword(
                                     userModel: userModel,
                                     onError: (status) {

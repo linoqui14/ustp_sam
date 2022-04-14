@@ -144,7 +144,15 @@ class _SchedulePickerState extends State<SchedulePicker>{
                   text: "Set",
                   onPressed: (){
                     if(building.text.isNotEmpty){
-                      widget.onSet.call(Schedule(id: widget.widgetID, room: building.text, inTime: timeIn.format(context), outTime: timeOut.format(context), day: day),this);
+                      widget.onSet.call(Schedule(
+                          id: widget.widgetID,
+                          room: building.text,
+                          inTime: ((timeIn.hour*60)+timeIn.minute),
+                          outTime: ((timeOut.hour*60)+timeOut.minute),
+                          day: day,
+                          inTimeStr: timeIn.format(context),
+                          outTimeStr: timeOut.format(context)
+                      ),this);
                     }
                     else{
                       MyDialog().show(

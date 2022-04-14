@@ -1,6 +1,8 @@
 
 
 
+
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -12,17 +14,17 @@ import 'package:ustp_sam/model/user_model.dart';
 import 'package:ustp_sam/pages/home.dart';
 import 'package:uuid/uuid.dart';
 import 'package:date_utils/date_utils.dart' as utilDate;
-class Attendance extends StatefulWidget{
-  const Attendance({Key? key,required this.subject,required this.userModel,required this.sensorAttendances}) : super(key: key);
+class AttendanceInstructor extends StatefulWidget{
+  const AttendanceInstructor({Key? key,required this.subject,required this.userModel,required this.sensorAttendances}) : super(key: key);
   final UserModel userModel;
   final Subject subject;
   final List<SensorAttendance> sensorAttendances;
 
   @override
-  State<Attendance> createState() =>_AttendanceState();
+  State<AttendanceInstructor> createState() =>_AttendanceState();
 }
 
-class _AttendanceState extends State<Attendance>{
+class _AttendanceState extends State<AttendanceInstructor>{
   List<Schedule> schedules = [];
   int late = 0 ,present = 0 ,absent = 0;
   int lmonth = 0,pmonth = 0,amonth = 0;
@@ -32,7 +34,6 @@ class _AttendanceState extends State<Attendance>{
   @override
   void initState() {
     widget.sensorAttendances.forEach((element) {
-      if(element.subjectID == widget.subject.id){
         switch(element.status){
           case 1:
             present++;
@@ -44,8 +45,6 @@ class _AttendanceState extends State<Attendance>{
             absent++;
             break;
         }
-      }
-
     });
 
     widget.subject.schedulesID.forEach((schedID) {
@@ -115,10 +114,10 @@ class _AttendanceState extends State<Attendance>{
                     }catch(e){
                       List<String >tempdate = sensorAtt.date.split("-");
                       String dateStr = "";
-                      if( tempdate[1].length==1){
+                      if(tempdate[1].length==1){
                         tempdate[1] = "0"+tempdate[1];
                       }
-                      if( tempdate[2].length==1){
+                      if(tempdate[2].length==1){
                         tempdate[2] = "0"+tempdate[2];
                       }
 
@@ -228,7 +227,7 @@ class _AttendanceState extends State<Attendance>{
   }
   List<Appointment> getAppointment(){
     List<Appointment> schedulesApt  = [];
-
+    DateTime subjectStartDate = DateTime.fromMillisecondsSinceEpoch(widget.subject.subjectStartDate);
     schedules.forEach((sched) {
       SensorAttendance? sensorAttendance;
 
@@ -242,51 +241,38 @@ class _AttendanceState extends State<Attendance>{
 
       DateTime startTime = DateTime(now.year,now.month,dayToDate(sched.day+1,DateTime.fromMillisecondsSinceEpoch(widget.subject.subjectStartDate)),hr1,min1,0);
       DateTime endTime = DateTime(now.year,now.month,dayToDate(sched.day+1,DateTime.fromMillisecondsSinceEpoch(widget.subject.subjectStartDate)),hr2,min2,0);
+      //getPossible data on this schedule
+      List<DateTime> possibleDate = [];
+      int numberOfDaysFromStartToToday = DateTime.now().difference(subjectStartDate).inDays;
 
-      if(widget.sensorAttendances.where((element){
-        DateTime date = DateTime.now();
-        try{
-          date = DateTime.parse(element.date);
-        }catch(e){
-          List<String >tempdate = element.date.split("-");
-          String dateStr = "";
-          if( tempdate[1].length==1){
-            tempdate[1] = "0"+tempdate[1];
-          }
-          if( tempdate[2].length==1){
-            tempdate[2] = "0"+tempdate[2];
-          }
-          dateStr+=tempdate[0]+"-"+tempdate[1]+"-"+tempdate[2];
-          date = DateTime.parse(dateStr);
-        }
-        //absent if adlaw karon is mas dako sa adlaw sa
-        bool isTrue = date.year==startTime.year&&date.month==startTime.month&&date.day==startTime.day;
-        return isTrue;
-
-      }).isEmpty){
-        if((startTime.day-DateTime.now().day)<=0){
+      SenSorAttendanceController.getSenSorAttendanceWhereScheduleIDANDStudentIDFuture(scheduleID: sched.id,studentID: widget.userModel.schoolID).then((value){
+        if(value.size<=0){
           var uuid = Uuid();
-          int start = (startTime.hour*60)+startTime.minute;
-          int nowStart = (DateTime.now().hour*60)+DateTime.now().minute;
-          if((nowStart-start)>30){
-            SenSorAttendanceController.upSert(sensorAttendance:
-            SensorAttendance(
-                status: 3,
-                id: uuid.v1(),
-                timeIn: 0,
-                subjectID: widget.subject.id,
-                timeOut: 0,
-                date: startTime.year.toString()+"-"+startTime.month.toString()+"-"+startTime.day.toString(),
-                scheduleID:sched.id,
-                userid: widget.userModel.schoolID,
-                isTexted: false
-            )
-            );
-          }
+          DateTime today = DateTime.now();
+          SenSorAttendanceController.upSert(sensorAttendance:
+          SensorAttendance(
+              status: 3,
+              id: uuid.v1(),
+              timeIn: 0,
+              subjectID: widget.subject.id,
+              timeOut: 0,
+              date: startTime.year.toString()+"-"+startTime.month.toString()+"-"+startTime.day.toString(),
+              scheduleID:sched.id,
+              userid: widget.userModel.schoolID,
+              isTexted: false
+          ));
         }
+        else{
+          // print(value.size);
+        }
+        value.docs.forEach((sesonrAtt) {
+          SensorAttendance sensorAttendance = SensorAttendance.toObject(sesonrAtt.data());
+          if(sensorAttendance.userid==widget.userModel.schoolID){
 
-      }
+          }
 
+        });
+      });
       widget.sensorAttendances.forEach((element) {
         DateTime date = DateTime.now();
         try{
@@ -294,12 +280,14 @@ class _AttendanceState extends State<Attendance>{
         }catch(e){
           List<String >tempdate = element.date.split("-");
           String dateStr = "";
-          if( tempdate[1].length==1){
+          if(tempdate[1].length==1){
             tempdate[1] = "0"+tempdate[1];
           }
-          if( tempdate[2].length==1){
+          if(tempdate[2].length==1){
             tempdate[2] = "0"+tempdate[2];
           }
+
+
 
           dateStr+=tempdate[0]+"-"+tempdate[1]+"-"+tempdate[2];
           date = DateTime.parse(dateStr);

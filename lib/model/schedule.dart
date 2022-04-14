@@ -1,13 +1,16 @@
 
 class Schedule{
-  String id,room,inTime,outTime;
-  int day;
+  String id,room,inTimeStr,outTimeStr;
+
+  int day,inTime,outTime;
   Schedule(
       {
         required this.id,
         required this.room,
         required this.inTime,
         required this.outTime,
+        required this.inTimeStr,
+        required this.outTimeStr,
         required this.day
       }
       );
@@ -18,6 +21,8 @@ class Schedule{
       'room':room,
       'inTime':inTime,
       'outTime':outTime,
+      'inTimeStr':inTimeStr,
+      'outTimeStr':outTimeStr,
       'day':day,
     };
   }
@@ -27,6 +32,8 @@ class Schedule{
       room:document['room'],
       inTime:document['inTime'],
       outTime:document['outTime'],
+      inTimeStr:document['inTimeStr'],
+      outTimeStr:document['outTimeStr'],
       day:document['day'],
     );
   }

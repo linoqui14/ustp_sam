@@ -9,10 +9,16 @@ class Authentication{
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: userModel.email,
           password: password
-      );
-      users.doc(userModel.schoolID).set(userModel.toMap()).then((value) {
-        onAdded();
+      ).then((value) {
+        if(value.user!.photoURL!=null){
+          userModel.profilePicLink = value.user!.photoURL!;
+        }
+        users.doc(userModel.schoolID).set(userModel.toMap()).then((value) {
+          onAdded();
+        });
+        return value;
       });
+
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

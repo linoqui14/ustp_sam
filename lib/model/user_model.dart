@@ -2,15 +2,14 @@
 
 class UserType{
   static const String student = "student";
-  static const String admin = "admin";
   static const String instructor = "instructor";
-  static const List<String> userTypes = [student,admin,instructor];
+  static const List<String> userTypes = [student,instructor];
 }
 
 class UserModel{
-  String schoolID,email,courseID,section,userType,fname,lname,mobileNumber;
+  String schoolID,email,courseID,section,userType,fname,lname,mobileNumber,profilePicLink;
   List<dynamic> subjectIDs;
-  UserModel({this.subjectIDs = const [],required this.fname,required this.lname,required this.mobileNumber,required this.schoolID,required this.email,required this.courseID,required this.section,this.userType = UserType.student});
+  UserModel({this.subjectIDs = const [],required this.fname,required this.lname,required this.mobileNumber,required this.schoolID,required this.email,required this.courseID,required this.section,this.userType = UserType.student,required this.profilePicLink});
 
   Map<String,dynamic> toMap(){
     return {
@@ -22,6 +21,7 @@ class UserModel{
       'schoolID':schoolID,
       'mobileNumber':mobileNumber,
       'subjectIDs':subjectIDs,
+      'profilePicLink':profilePicLink,
     };
   }
 
@@ -35,6 +35,7 @@ class UserModel{
       mobileNumber:document['mobileNumber'],
       schoolID:document['schoolID'],
       subjectIDs:document['subjectIDs'],
+      profilePicLink:document['profilePicLink'],
     );
   }
 
