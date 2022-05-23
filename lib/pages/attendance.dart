@@ -264,7 +264,7 @@ class _AttendanceState extends State<Attendance>{
         return isTrue;
 
       }).isEmpty){
-        if((startTime.day-DateTime.now().day)<=0){
+        if(startTime.day<DateTime.now().day){
           var uuid = Uuid();
           int start = (startTime.hour*60)+startTime.minute;
           int nowStart = (DateTime.now().hour*60)+DateTime.now().minute;

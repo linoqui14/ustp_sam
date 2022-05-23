@@ -72,7 +72,9 @@ class _LoginState extends State<Login> {
                       onPressed: ()async {
                         if(schoolID.text.isNotEmpty&&password.text.isNotEmpty){
                           UserController.getUserDoc(id: schoolID.text).then((value) async{
+                            print(value.exists);
                             if(value.exists){
+
                               try {
                                 print((value.data() as Map<String,dynamic>)['email']);
                                 UserCredential userCredential = await FirebaseAuth

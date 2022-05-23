@@ -69,12 +69,15 @@ class _HomeState extends State<Home>{
   }
   @override
   void initState() {
+    print(widget.email);
     if(widget.email != null){
       UserController.getUserWhereEmailDoc(email: widget.email!).then((value) {
+
         if(value.size>0){
           if(value.docs.first.exists){
             setState(() {
               userModel = UserModel.toObject(value.docs.first.data());
+              print(userModel.fname);
               lname.text=userModel.lname;
               fname.text=userModel.fname;
               email.text=userModel.email;
@@ -244,292 +247,328 @@ class _HomeState extends State<Home>{
                                       });
                                       String strColor = subject.color;
                                       Color color = Color(int.parse("0x$strColor"));
-                                      return Opacity(
-                                        opacity: subject.isDeleted?0.2:1,
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.only(left: 30),
-                                              child: Row(
+                                      if(subject.isDeleted)return Center();
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 30),
+                                            child: Row(
+                                              children: [
+                                                Text("ID - ",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                Text(subject.id,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.black87),),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            margin: EdgeInsets.only(left: 10,right: 10),
+                                            padding: EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                                color: color.withAlpha(100),
+                                                border: Border.all(
+                                                  color: color,
+                                                ),
+                                                borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20),bottomLeft: Radius.circular(20))
+                                            ),
+                                            child: GestureDetector(
+                                              onTap: (){
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(builder: (context) => Attendance(userModel: userModel,subject:subject,sensorAttendances: sensorAttendances,)),
+                                                );
+                                              },
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.start,
                                                 children: [
-                                                  Text("ID - ",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                  Text(subject.id,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.black87),),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      FutureBuilder<DocumentSnapshot>(
+                                                          future: UserController.getUserDoc(id: subject.instructorID),
+                                                          builder: (context, snapshot) {
+                                                            if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
+                                                            if(!snapshot.data!.exists)return Text("No instructor assigned yet",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
+                                                            UserModel userModel = UserModel.toObject(snapshot.data);
+                                                            // return Text(userModel.fname.toTitleCase()+" "+userModel.lname.toTitleCase(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
+                                                            return FutureBuilder<String>(
+                                                              future: firebase_storage.FirebaseStorage.instance.ref().child('files/profiles/'+userModel.schoolID).getDownloadURL(),
+                                                              builder: (context,snapshot){
+                                                                if(!snapshot.hasData)return ClipRRect(
+                                                                    borderRadius:BorderRadius.horizontal(left: Radius.circular(25)) ,
+                                                                    child: Image.network("https://firebasestorage.googleapis.com/v0/b/ustp-sam.appspot.com/o/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg?alt=media&token=467e3a72-190c-4320-bd3f-2948c481d5f3",width: 100,height: 99,fit: BoxFit.fitWidth,)
+                                                                );
+                                                                return ClipRRect(
+                                                                    borderRadius: BorderRadius.only(topLeft: Radius.circular(50),topRight:Radius.circular(100),bottomRight:Radius.circular(100),bottomLeft: Radius.circular(100) ) ,
+                                                                    child: Image.network(snapshot.data!,width: 100,height: 99,fit: BoxFit.fitWidth,)
+                                                                );
+                                                              },
+                                                            );
+                                                          }
+                                                      ),
+                                                      Expanded(
+                                                        child: Container(
+                                                          margin: EdgeInsets.only(left: 5),
+                                                          child: Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                children: [
+
+                                                                  FutureBuilder<DocumentSnapshot>(
+                                                                      future: UserController.getUserDoc(id: subject.instructorID),
+                                                                      builder: (context, snapshot) {
+                                                                        if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
+                                                                        if(!snapshot.data!.exists)return Text("No instructor assigned yet",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
+                                                                        UserModel userModel = UserModel.toObject(snapshot.data);
+                                                                        return Column(
+                                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                                          children: [
+                                                                            Text(userModel.fname.toTitleCase()+" "+userModel.lname.toTitleCase(),style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white),),
+                                                                            Text(userModel.mobileNumber,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900,color: Colors.white),)
+                                                                          ],
+                                                                        );
+
+                                                                      }
+                                                                  ),
+                                                                ],
+
+                                                              ),
+
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+
+
+                                                    ],
+                                                  ),
+
+                                                  Divider(color: Colors.black87.withAlpha(50),),
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text("Code",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                      Text(subject.subjectCode,style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.white),),
+
+                                                    ],
+                                                  ),
+                                                  Text("Subject Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                  SizedBox(
+                                                    width:  MediaQuery. of(context). size. width*.60,
+                                                    child: FittedBox(
+                                                      fit: BoxFit.fitWidth,
+                                                      child: Text(subject.name+" ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,color: Colors.white),),
+                                                    ),
+                                                  ),
+                                                  Divider(color: Colors.black87.withAlpha(50),),
+                                                  Column(
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: const [
+                                                          Text("Day",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                          Text("    Time-in",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                          Text("Time-out",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                        ],
+                                                      ),
+                                                      SizedBox(
+                                                        height: 50,
+                                                        child: ListView(
+                                                          children: subject.schedulesID.map((schedule) {
+                                                            SenSorAttendanceController.getSenSorAttendanceWhereScheduleIDFuture(scheduleID: schedule).then((value) {
+                                                              if(value.size<0)return;
+                                                              value.docs.forEach((element) {
+                                                                SensorAttendance sensorAttendance = SensorAttendance.toObject(element);
+                                                                String status = "";
+                                                                switch(sensorAttendance.status){
+                                                                  case 1:
+                                                                    status = "PRESENT";
+                                                                    break;
+                                                                  case 2:
+                                                                    status = "LATE";
+                                                                    break;
+                                                                  case 3:
+                                                                    status = "ABSENT";
+                                                                    break;
+                                                                }
+                                                                if(!sensorAttendance.isTexted){
+                                                                  DateTime date = DateTime.now();
+                                                                  try{
+                                                                    date = DateTime.parse(sensorAttendance.date);
+                                                                  }catch(e){
+                                                                    List<String >tempdate = sensorAttendance.date.split("-");
+                                                                    String dateStr = "";
+                                                                    if( tempdate[1].length==1){
+                                                                      tempdate[1] = "0"+tempdate[1];
+                                                                    }
+                                                                    if( tempdate[2].length==1){
+                                                                      tempdate[2] = "0"+tempdate[2];
+                                                                    }
+
+                                                                    dateStr+=tempdate[0]+"-"+tempdate[1]+"-"+tempdate[2];
+                                                                    date = DateTime.parse(dateStr);
+                                                                  }
+                                                                  DateTime timeIn = date.add(Duration(hours: sensorAttendance.timeIn));
+                                                                  String message = subject.name+" "+status+" "+DateFormat().add_jms().format(DateTime.fromMillisecondsSinceEpoch(timeIn.millisecondsSinceEpoch));
+                                                                  telephony.sendSms(
+                                                                      to:userModel.mobileNumber,
+                                                                      message: message
+                                                                  );
+                                                                  var uuid = Uuid();
+                                                                  StudentLog studentLog = StudentLog(id: uuid.v1(),message: message,time: timeIn.millisecondsSinceEpoch, studentID: userModel.schoolID);
+                                                                  StudentLogController.upSert(log: studentLog);
+                                                                  sensorAttendance.isTexted = true;
+                                                                  SenSorAttendanceController.upSert(sensorAttendance: sensorAttendance);
+                                                                }
+                                                              });
+
+                                                            });
+                                                            return FutureBuilder<DocumentSnapshot>(
+                                                                future: ScheduleController.getScheduleFuture(id:schedule),
+                                                                builder: (context,snapshot){
+                                                                  if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
+                                                                  if(!snapshot.data!.exists)return Center(child: CircularProgressIndicator(),);
+                                                                  Schedule schedule = Schedule.toObject(snapshot.data);
+                                                                  return Padding(
+                                                                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                                                    child: Row(
+                                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                      children: [
+                                                                        Text(CustomDayPicker.intToDay(schedule.day),style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87),),
+                                                                        Text("    "+schedule.inTimeStr,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
+                                                                        Text(schedule.outTimeStr,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
+                                                                      ],
+                                                                    ),
+                                                                  );
+                                                                }
+                                                            );
+                                                          }).toList(),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Divider(color: Colors.black87.withAlpha(50),),
+                                                  StreamBuilder<QuerySnapshot>(
+                                                    stream: SenSorAttendanceController.getSenSorAttendanceWhereSubjectIDStream(subjectID: subject.id),
+                                                    builder: (context, snapshot) {
+                                                      if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
+                                                      if(snapshot.data!.size<0)return Center(child: CircularProgressIndicator(),);
+                                                      List<SensorAttendance> sensorAttendance =[];
+                                                      int late = 0 , present = 0,absent = 0;
+                                                      snapshot.data!.docs.forEach((element) {
+                                                        SensorAttendance att = SensorAttendance.toObject(element.data());
+                                                        sensorAttendance.add(att);
+                                                      });
+                                                      sensorAttendance.forEach((element) {
+                                                        if(element.userid==userModel.schoolID){
+                                                          switch(element.status){
+                                                            case 1:
+                                                              present++;
+                                                              break;
+                                                            case 2:
+                                                              late++;
+                                                              break;
+                                                            case 3:
+                                                              absent++;
+                                                              break;
+                                                          }
+                                                        }
+                                                      });
+                                                      this.sensorAttendances = sensorAttendance;
+                                                      return Row(
+                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          Column(
+                                                            children: [
+                                                              Text("Late",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
+                                                              Text(late.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.amber)),
+                                                            ],
+                                                          ),
+                                                          Column(
+                                                            children: [
+                                                              Text("Present",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
+                                                              Text(present.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.green)),
+                                                            ],
+                                                          ),
+                                                          Column(
+                                                            children: [
+                                                              Text("Absent",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
+                                                              Text(absent.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.redAccent)),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      );
+                                                    }
+                                                  )
                                                 ],
                                               ),
                                             ),
-                                            Container(
-                                              margin: EdgeInsets.only(left: 10,right: 10),
-                                              padding: EdgeInsets.all(10),
-                                              decoration: BoxDecoration(
-                                                  color: color.withAlpha(100),
-                                                  border: Border.all(
-                                                    color: color,
-                                                  ),
-                                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20),bottomLeft: Radius.circular(20))
-                                              ),
-                                              child: GestureDetector(
-                                                onTap: (){
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(builder: (context) => Attendance(userModel: userModel,subject:subject,sensorAttendances: sensorAttendances,)),
-                                                  );
-                                                },
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        FutureBuilder<DocumentSnapshot>(
-                                                            future: UserController.getUserDoc(id: subject.instructorID),
-                                                            builder: (context, snapshot) {
-                                                              if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
-                                                              if(!snapshot.data!.exists)return Text("No instructor assigned yet",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
-                                                              UserModel userModel = UserModel.toObject(snapshot.data);
-                                                              // return Text(userModel.fname.toTitleCase()+" "+userModel.lname.toTitleCase(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
-                                                              return FutureBuilder<String>(
-                                                                future: firebase_storage.FirebaseStorage.instance.ref().child('files/profiles/'+userModel.schoolID).getDownloadURL(),
-                                                                builder: (context,snapshot){
-                                                                  if(!snapshot.hasData)return ClipRRect(
-                                                                      borderRadius:BorderRadius.horizontal(left: Radius.circular(25)) ,
-                                                                      child: Image.network("https://firebasestorage.googleapis.com/v0/b/ustp-sam.appspot.com/o/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg?alt=media&token=467e3a72-190c-4320-bd3f-2948c481d5f3",width: 100,height: 99,fit: BoxFit.fitWidth,)
-                                                                  );
-                                                                  return ClipRRect(
-                                                                      borderRadius: BorderRadius.only(topLeft: Radius.circular(50),topRight:Radius.circular(100),bottomRight:Radius.circular(100),bottomLeft: Radius.circular(100) ) ,
-                                                                      child: Image.network(snapshot.data!,width: 100,height: 99,fit: BoxFit.fitWidth,)
-                                                                  );
-                                                                },
-                                                              );
-                                                            }
-                                                        ),
-
-                                                        Expanded(
-                                                          child: Container(
-                                                            margin: EdgeInsets.only(left: 5),
-                                                            child: Row(
-                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              children: [
-                                                                Column(
-                                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                                  children: [
-                                                                    Text("Subject Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                                    Text(subject.name.toTitleCase(),style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.black87),),
-                                                                    FutureBuilder<DocumentSnapshot>(
-                                                                        future: UserController.getUserDoc(id: subject.instructorID),
-                                                                        builder: (context, snapshot) {
-                                                                          if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
-                                                                          if(!snapshot.data!.exists)return Text("No instructor assigned yet",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
-                                                                          UserModel userModel = UserModel.toObject(snapshot.data);
-                                                                          return Column(
-                                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              Text(userModel.fname.toTitleCase()+" "+userModel.lname.toTitleCase(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                                              Text(userModel.mobileNumber,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),)
-                                                                            ],
-                                                                          );
-
-                                                                        }
-                                                                    ),
-                                                                  ],
-
-                                                                ),
-                                                                Column(
-                                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                                  children: [
-                                                                    Text("Code",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                                    Text(subject.subjectCode,style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.black87),),
-
-                                                                  ],
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-
-                                                      ],
-                                                    ),
-
-                                                    Divider(color: Colors.black87.withAlpha(50),),
-                                                    Column(
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          children: const [
-                                                            Text("Day",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                            Text("    Time-in",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                            Text("Time-out",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                          ],
-                                                        ),
-                                                        SizedBox(
-                                                          height: 50,
-                                                          child: ListView(
-                                                            children: subject.schedulesID.map((schedule) {
-                                                              SenSorAttendanceController.getSenSorAttendanceWhereScheduleIDFuture(scheduleID: schedule).then((value) {
-                                                                if(value.size<0)return;
-                                                                value.docs.forEach((element) {
-                                                                  SensorAttendance sensorAttendance = SensorAttendance.toObject(element);
-                                                                  String status = "";
-                                                                  switch(sensorAttendance.status){
-                                                                    case 1:
-                                                                      status = "PRESENT";
-                                                                      break;
-                                                                    case 2:
-                                                                      status = "LATE";
-                                                                      break;
-                                                                    case 3:
-                                                                      status = "ABSENT";
-                                                                      break;
-                                                                  }
-                                                                  if(!sensorAttendance.isTexted){
-                                                                    DateTime date = DateTime.now();
-                                                                    try{
-                                                                      date = DateTime.parse(sensorAttendance.date);
-                                                                    }catch(e){
-                                                                      List<String >tempdate = sensorAttendance.date.split("-");
-                                                                      String dateStr = "";
-                                                                      if( tempdate[1].length==1){
-                                                                        tempdate[1] = "0"+tempdate[1];
-                                                                      }
-                                                                      if( tempdate[2].length==1){
-                                                                        tempdate[2] = "0"+tempdate[2];
-                                                                      }
-
-                                                                      dateStr+=tempdate[0]+"-"+tempdate[1]+"-"+tempdate[2];
-                                                                      date = DateTime.parse(dateStr);
-                                                                    }
-                                                                    DateTime timeIn = date.add(Duration(hours: sensorAttendance.timeIn));
-                                                                    String message = subject.name+" "+status+" "+DateFormat().add_jms().format(DateTime.fromMillisecondsSinceEpoch(timeIn.millisecondsSinceEpoch));
-                                                                    telephony.sendSms(
-                                                                        to:userModel.mobileNumber,
-                                                                        message: message
-                                                                    );
-                                                                    var uuid = Uuid();
-                                                                    StudentLog studentLog = StudentLog(id: uuid.v1(),message: message,time: timeIn.millisecondsSinceEpoch, studentID: userModel.schoolID);
-                                                                    StudentLogController.upSert(log: studentLog);
-                                                                    sensorAttendance.isTexted = true;
-                                                                    SenSorAttendanceController.upSert(sensorAttendance: sensorAttendance);
-                                                                  }
-                                                                });
-
-                                                              });
-                                                              return FutureBuilder<DocumentSnapshot>(
-                                                                  future: ScheduleController.getScheduleFuture(id:schedule),
-                                                                  builder: (context,snapshot){
-                                                                    if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
-                                                                    if(!snapshot.data!.exists)return Center(child: CircularProgressIndicator(),);
-                                                                    Schedule schedule = Schedule.toObject(snapshot.data);
-                                                                    return Padding(
-                                                                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                                                      child: Row(
-                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                        children: [
-                                                                          Text(CustomDayPicker.intToDay(schedule.day),style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87),),
-                                                                          Text("    "+schedule.inTimeStr,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
-                                                                          Text(schedule.outTimeStr,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
-                                                                        ],
-                                                                      ),
-                                                                    );
-                                                                  }
-                                                              );
-                                                            }).toList(),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Divider(color: Colors.black87.withAlpha(50),),
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        Column(
-                                                          children: [
-                                                            Text("Late",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
-                                                            Text(late.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.amber)),
-                                                          ],
-                                                        ),
-                                                        Column(
-                                                          children: [
-                                                            Text("Present",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
-                                                            Text(present.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.green)),
-                                                          ],
-                                                        ),
-                                                        Column(
-                                                          children: [
-                                                            Text("Absent",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
-                                                            Text(absent.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.redAccent)),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              margin: EdgeInsets.only(left: 10,right: 10,bottom: 10),
-                                              width: 150,
-                                              child: CustomTextButton(
-                                                rTR: 0,
-                                                rTl: 0,
-                                                rBL: 100,
-                                                rBR: 50,
-                                                width: 100,
-                                                text: "Unenroll",
-                                                color: MyColors.red,
-                                                onPressed: (){
-                                                  TextEditingController confirmText = TextEditingController();
-                                                  MyDialog().show(context: context,
-                                                      statefulBuilder: StatefulBuilder(builder: (context, setState){
-                                                        return AlertDialog(
-                                                          content: SizedBox(
-                                                            height: 150,
-                                                            child: Center(child:Column(
-                                                              children: [
-                                                                Text("Unenroll Subject ",style: TextStyle(fontWeight: FontWeight.w100),),
-                                                                Text(subject.name,style: TextStyle(fontWeight: FontWeight.bold),),
-                                                                CustomTextField(
-                                                                    hint: "Subject Code",
-                                                                    padding: EdgeInsets.zero,
-                                                                    controller: confirmText),
-                                                                Row(
-                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                  children: [
-                                                                    CustomTextButton(
-                                                                        text: "Confirm",
-                                                                        color: MyColors.red,
-                                                                        onPressed: (){
-                                                                          if(confirmText.text==subject.subjectCode){
-                                                                            userModel.subjectIDs.remove(subject.id);
-                                                                            UserController.upSert(user: userModel);
-                                                                            Navigator.of(context).pop();
-                                                                          }
-                                                                        }
-                                                                    ),
-                                                                    CustomTextButton(
-                                                                        text: "Cancel",
-                                                                        color: MyColors.deadBlue,
-                                                                        onPressed: (){
+                                          ),
+                                          Container(
+                                            margin: EdgeInsets.only(left: 10,right: 10,bottom: 10),
+                                            width: 150,
+                                            child: CustomTextButton(
+                                              rTR: 0,
+                                              rTl: 0,
+                                              rBL: 100,
+                                              rBR: 50,
+                                              width: 100,
+                                              text: "Unenroll",
+                                              color: MyColors.red,
+                                              onPressed: (){
+                                                TextEditingController confirmText = TextEditingController();
+                                                MyDialog().show(context: context,
+                                                    statefulBuilder: StatefulBuilder(builder: (context, setState){
+                                                      return AlertDialog(
+                                                        content: SizedBox(
+                                                          height: 150,
+                                                          child: Center(child:Column(
+                                                            children: [
+                                                              Text("Unenroll Subject ",style: TextStyle(fontWeight: FontWeight.w100),),
+                                                              Text(subject.name,style: TextStyle(fontWeight: FontWeight.bold),),
+                                                              CustomTextField(
+                                                                  hint: "Subject Code",
+                                                                  padding: EdgeInsets.zero,
+                                                                  controller: confirmText),
+                                                              Row(
+                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                children: [
+                                                                  CustomTextButton(
+                                                                      text: "Confirm",
+                                                                      color: MyColors.red,
+                                                                      onPressed: (){
+                                                                        if(confirmText.text==subject.subjectCode){
+                                                                          userModel.subjectIDs.remove(subject.id);
+                                                                          UserController.upSert(user: userModel);
                                                                           Navigator.of(context).pop();
-
                                                                         }
-                                                                    )
-                                                                  ],
-                                                                ),
+                                                                      }
+                                                                  ),
+                                                                  CustomTextButton(
+                                                                      text: "Cancel",
+                                                                      color: MyColors.deadBlue,
+                                                                      onPressed: (){
+                                                                        Navigator.of(context).pop();
 
-                                                              ],
-                                                            )),
-                                                          ),
-                                                        );
-                                                      })
-                                                  );
-                                                },
-                                              ),
-                                            )
-                                          ],
-                                        ),
+                                                                      }
+                                                                  )
+                                                                ],
+                                                              ),
+
+                                                            ],
+                                                          )),
+                                                        ),
+                                                      );
+                                                    })
+                                                );
+                                              },
+                                            ),
+                                          )
+                                        ],
                                       );
                                     },
                                   );
@@ -930,234 +969,299 @@ class _HomeState extends State<Home>{
                           });
 
                           return ListView(
-                            children: subjects.map((subject)  {
-                              SenSorAttendanceController.getSenSorAttendanceWhereSubjectIDFuture(subjectID: subject.id).then((value){
-                                int late = 0 , absent = 0, present = 0;
-                                if(value.size<0)return;
-                                value.docs.forEach((element) {
-                                  SensorAttendance sensorAttendance = SensorAttendance.toObject(element);
-                                  String status = "";
-                                  switch(sensorAttendance.status){
-                                    case 1:
-                                      present++;
-                                      status = "PRESENT";
-                                      break;
-                                    case 2:
-                                      late++;
-                                      status = "LATE";
-                                      break;
-                                    case 3:
-                                      absent++;
-                                      status = "ABSENT";
-                                      break;
-                                  }
-                                  if(!sensorAttendance.isTexted){
-                                    DateTime date = DateTime.now();
-                                    try{
-                                      date = DateTime.parse(sensorAttendance.date);
-                                    }catch(e){
-                                      List<String >tempdate = sensorAttendance.date.split("-");
-                                      String dateStr = "";
-                                      if(tempdate[1].length==1){
-                                        tempdate[1] = "0"+tempdate[1];
-                                      }
-                                      if(tempdate[2].length==1){
-                                        tempdate[2] = "0"+tempdate[2];
-                                      }
+                            children:subjects.map((subject)  {
 
-
-                                      dateStr+=tempdate[0]+"-"+tempdate[1]+"-"+tempdate[2];
-                                      date = DateTime.parse(dateStr);
-                                    }
-
-                                    DateTime timeIn = date.add(Duration(hours: sensorAttendance.timeIn));
-                                    String message = subject.name+" "+status+" "+DateFormat().add_jms().format(DateTime.fromMillisecondsSinceEpoch(timeIn.millisecondsSinceEpoch));
-                                    telephony.sendSms(
-                                        to:userModel.mobileNumber,
-                                        message: message
-                                    );
-                                    var uuid = Uuid();
-                                    StudentLog studentLog = StudentLog(id: uuid.v1(),message: message,time: timeIn.millisecondsSinceEpoch, studentID: userModel.schoolID);
-                                    StudentLogController.upSert(log: studentLog);
-                                    sensorAttendance.isTexted = true;
-                                    SenSorAttendanceController.upSert(sensorAttendance: sensorAttendance);
-                                  }
-
-                                });
-                                subject.late = late;
-                                subject.absent = absent;
-                                subject.present = present;
-                                SubjectController.upSert(subject: subject);
-                              });
                               String strColor = subject.color;
                               Color color = Color(int.parse("0x$strColor"));
+                              if(subject.isDeleted)return Center();
                               return StreamBuilder<QuerySnapshot>(
-                                  stream: UserController.getValidUserWhereSubjectID(subjectID: subject.id),
-                                  builder: (context,snapshot) {
-                                    if(!snapshot.hasData)return Center(child: Text("No Student Enrolled Yets"),);
-                                    if(snapshot.data!.size<0) return Center(child: Text("No Student Enrolled Yets"),);
-                                    List<UserModel> userModels = [];
-                                    snapshot.data!.docs.forEach((user) {
-                                      UserModel userModel = UserModel.toObject(user.data());
-                                      userModels.add(userModel);
-                                    });
-                                    return GestureDetector(
-                                      onTap: (){
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(builder: (context) =>  SubjectStudent(subject: subject, user: userModel, students:userModels )),
-                                        );
-                                      },
-                                      child: Column(
-                                        children: [
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 30,right: 30),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                stream: SenSorAttendanceController.getSenSorAttendanceWhereSubjectIDStream(subjectID: subject.id),
+                                builder: (context, snapshot) {
+                                  if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
+                                  if(snapshot.data!.size<0)return Center(child: CircularProgressIndicator(),);
+                                  int late = 0 , present = 0,absent = 0;
+                                  snapshot.data!.docs.forEach((element) {
+                                    SensorAttendance senor = SensorAttendance.toObject(element.data());
+                                      switch(senor.status){
+                                        case 1:
+                                          present++;
+                                          break;
+                                        case 2:
+                                          late++;
+                                          break;
+                                        case 3:
+                                          absent++;
+                                          break;
+                                      }
+
+                                  });
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.only(left: 30),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
                                               children: [
-                                                Row(
-                                                  children: [
-                                                    Text("ID - ",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                    Text(subject.id,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.black87),),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Text("Student"+(userModels.length>1?"s":"") +" Enrolled - ",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                    Text(userModels.length.toString(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.black87),),
-                                                  ],
-                                                ),
+                                                Text("ID - ",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                Text(subject.id,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.black87),),
                                               ],
                                             ),
-                                          ),
-                                          Container(
-                                            margin: EdgeInsets.only(left: 10,right: 10,bottom: 10),
-                                            padding: EdgeInsets.all(10),
-                                            decoration: BoxDecoration(
-                                                color:color.withAlpha(100),
-                                                border: Border.all(
-                                                  color: color,
-                                                ),
-                                                borderRadius: BorderRadius.all(Radius.circular(20))
+                                            Padding(
+                                              padding: const EdgeInsets.only(right: 25.0),
+                                              child: Row(
+                                                children: [
+                                                  Text("Enrolled Students - ",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                  StreamBuilder<QuerySnapshot>(
+                                                      stream:UserController.getValidUserWhereSubjectID(subjectID: subject.id),
+                                                      builder: (context,snapshot){
+                                                        if(!snapshot.hasData)return Text("0",style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.black87),);
+
+                                                        return Text(snapshot.data!.size.toString(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.black87),);
+                                                      }
+                                                  )
+
+                                                ],
+                                              ),
                                             ),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Text("Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                        SizedBox(
-                                                          width:  MediaQuery. of(context). size. width*.3,
-                                                          child: FittedBox(
-                                                              fit: BoxFit.fitWidth,
-                                                              child: Text(subject.name.toTitleCase(),style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.black87),)
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Text("Code",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                        Text(subject.subjectCode,style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.black87),),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                                FutureBuilder<DocumentSnapshot>(
-                                                    future: UserController.getUserDoc(id: subject.instructorID),
-                                                    builder: (context, snapshot) {
-                                                      if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
-                                                      if(!snapshot.data!.exists)return Text("No instructor assigned yet",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
-                                                      UserModel userModel = UserModel.toObject(snapshot.data);
-                                                      return Text(userModel.fname.toTitleCase()+" "+userModel.lname.toTitleCase(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
-                                                    }
-                                                ),
-                                                Divider(color: Colors.black87.withAlpha(50),),
-                                                Column(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: const [
-                                                        Text("Day",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                        Text("    Time-in",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                        Text("Time-out",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
-                                                      ],
-                                                    ),
-                                                    SizedBox(
-                                                      height: 50,
-                                                      child: ListView(
-                                                        children: subject.schedulesID.map((schedule) {
-                                                          return FutureBuilder<DocumentSnapshot>(
-                                                              future: ScheduleController.getScheduleFuture(id:schedule),
-                                                              builder: (context,snapshot){
-                                                                if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
-                                                                if(!snapshot.data!.exists)return Center(child: CircularProgressIndicator(),);
-                                                                Schedule schedule = Schedule.toObject(snapshot.data);
-                                                                return Padding(
-                                                                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                                                                  child: Row(
-                                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                    children: [
-                                                                      Text(CustomDayPicker.intToDay(schedule.day),style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87),),
-                                                                      Text("    "+schedule.inTimeStr,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
-                                                                      Text(schedule.outTimeStr,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
-                                                                    ],
-                                                                  ),
-                                                                );
-                                                              }
-                                                          );
-                                                        }).toList(),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Divider(color: Colors.white.withAlpha(50),),
-                                                StatefulBuilder(
-                                                    builder: (context,setState) {
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(left: 10,right: 10),
+                                        padding: EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                            color: color.withAlpha(100),
+                                            border: Border.all(
+                                              color: color,
+                                            ),
+                                            borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20),bottomLeft: Radius.circular(20))
+                                        ),
+                                        child: GestureDetector(
+                                          onTap: (){
+                                            UserController.getValidUserWhereSubjectIDFuture(subjectID: subject.id).then((value){
+                                              if(value.size<0)return;
+                                              List<UserModel> users = [];
+                                              value.docs.forEach((element) {
+                                                UserModel user = UserModel.toObject(element.data());
+                                                users.add(user);
+                                              });
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => SubjectStudent(students: users,subject:subject,user: userModel, )),
+                                              );
+                                            });
 
-
-                                                      return Row(
+                                          },
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  FutureBuilder<DocumentSnapshot>(
+                                                      future: UserController.getUserDoc(id: subject.instructorID),
+                                                      builder: (context, snapshot) {
+                                                        if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
+                                                        if(!snapshot.data!.exists)return Text("No instructor assigned yet",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
+                                                        UserModel userModel = UserModel.toObject(snapshot.data);
+                                                        // return Text(userModel.fname.toTitleCase()+" "+userModel.lname.toTitleCase(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
+                                                        return FutureBuilder<String>(
+                                                          future: firebase_storage.FirebaseStorage.instance.ref().child('files/profiles/'+userModel.schoolID).getDownloadURL(),
+                                                          builder: (context,snapshot){
+                                                            if(!snapshot.hasData)return ClipRRect(
+                                                                borderRadius:BorderRadius.horizontal(left: Radius.circular(25)) ,
+                                                                child: Image.network("https://firebasestorage.googleapis.com/v0/b/ustp-sam.appspot.com/o/360_F_64676383_LdbmhiNM6Ypzb3FM4PPuFP9rHe7ri8Ju.jpg?alt=media&token=467e3a72-190c-4320-bd3f-2948c481d5f3",width: 100,height: 99,fit: BoxFit.fitWidth,)
+                                                            );
+                                                            return ClipRRect(
+                                                                borderRadius: BorderRadius.only(topLeft: Radius.circular(50),topRight:Radius.circular(100),bottomRight:Radius.circular(100),bottomLeft: Radius.circular(100) ) ,
+                                                                child: Image.network(snapshot.data!,width: 100,height: 99,fit: BoxFit.fitWidth,)
+                                                            );
+                                                          },
+                                                        );
+                                                      }
+                                                  ),
+                                                  Expanded(
+                                                    child: Container(
+                                                      margin: EdgeInsets.only(left: 5),
+                                                      child: Row(
                                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: [
                                                           Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
-                                                              Text("Late",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
-                                                              Text(subject.late.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.amber)),
+
+                                                              FutureBuilder<DocumentSnapshot>(
+                                                                  future: UserController.getUserDoc(id: subject.instructorID),
+                                                                  builder: (context, snapshot) {
+                                                                    if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
+                                                                    if(!snapshot.data!.exists)return Text("No instructor assigned yet",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),);
+                                                                    UserModel userModel = UserModel.toObject(snapshot.data);
+                                                                    return Column(
+                                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                                      children: [
+                                                                        Text(userModel.fname.toTitleCase()+" "+userModel.lname.toTitleCase(),style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white),),
+                                                                        Text(userModel.mobileNumber,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900,color: Colors.white),)
+                                                                      ],
+                                                                    );
+
+                                                                  }
+                                                              ),
                                                             ],
+
                                                           ),
-                                                          Column(
-                                                            children: [
-                                                              Text("Present",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
-                                                              Text(subject.present.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.green)),
-                                                            ],
-                                                          ),
-                                                          Column(
-                                                            children: [
-                                                              Text("Absent",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
-                                                              Text(subject.absent.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.redAccent)),
-                                                            ],
-                                                          ),
+
                                                         ],
-                                                      );
-                                                    }
-                                                )
-                                              ],
-                                            ),
+                                                      ),
+                                                    ),
+                                                  ),
+
+
+                                                ],
+                                              ),
+
+                                              Divider(color: Colors.black87.withAlpha(50),),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text("Code",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                  Text(subject.subjectCode,style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.white),),
+
+                                                ],
+                                              ),
+                                              Text("Subject Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                              SizedBox(
+                                                width:  MediaQuery. of(context). size. width*.60,
+                                                child: FittedBox(
+                                                  fit: BoxFit.fitWidth,
+                                                  child: Text(subject.name+" ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,color: Colors.white),),
+                                                ),
+                                              ),
+                                              Divider(color: Colors.black87.withAlpha(50),),
+                                              Column(
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: const [
+                                                      Text("Day",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                      Text("    Time-in",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                      Text("Time-out",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87),),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 50,
+                                                    child: ListView(
+                                                      children: subject.schedulesID.map((schedule) {
+                                                        SenSorAttendanceController.getSenSorAttendanceWhereScheduleIDFuture(scheduleID: schedule).then((value) {
+                                                          if(value.size<0)return;
+                                                          value.docs.forEach((element) {
+                                                            SensorAttendance sensorAttendance = SensorAttendance.toObject(element);
+                                                            String status = "";
+                                                            switch(sensorAttendance.status){
+                                                              case 1:
+                                                                status = "PRESENT";
+                                                                break;
+                                                              case 2:
+                                                                status = "LATE";
+                                                                break;
+                                                              case 3:
+                                                                status = "ABSENT";
+                                                                break;
+                                                            }
+                                                            if(!sensorAttendance.isTexted){
+                                                              DateTime date = DateTime.now();
+                                                              try{
+                                                                date = DateTime.parse(sensorAttendance.date);
+                                                              }catch(e){
+                                                                List<String >tempdate = sensorAttendance.date.split("-");
+                                                                String dateStr = "";
+                                                                if( tempdate[1].length==1){
+                                                                  tempdate[1] = "0"+tempdate[1];
+                                                                }
+                                                                if( tempdate[2].length==1){
+                                                                  tempdate[2] = "0"+tempdate[2];
+                                                                }
+
+                                                                dateStr+=tempdate[0]+"-"+tempdate[1]+"-"+tempdate[2];
+                                                                date = DateTime.parse(dateStr);
+                                                              }
+                                                              DateTime timeIn = date.add(Duration(hours: sensorAttendance.timeIn));
+                                                              String message = subject.name+" "+status+" "+DateFormat().add_jms().format(DateTime.fromMillisecondsSinceEpoch(timeIn.millisecondsSinceEpoch));
+                                                              telephony.sendSms(
+                                                                  to:userModel.mobileNumber,
+                                                                  message: message
+                                                              );
+                                                              var uuid = Uuid();
+                                                              StudentLog studentLog = StudentLog(id: uuid.v1(),message: message,time: timeIn.millisecondsSinceEpoch, studentID: userModel.schoolID);
+                                                              StudentLogController.upSert(log: studentLog);
+                                                              sensorAttendance.isTexted = true;
+                                                              SenSorAttendanceController.upSert(sensorAttendance: sensorAttendance);
+                                                            }
+                                                          });
+
+                                                        });
+                                                        return FutureBuilder<DocumentSnapshot>(
+                                                            future: ScheduleController.getScheduleFuture(id:schedule),
+                                                            builder: (context,snapshot){
+                                                              if(!snapshot.hasData)return Center(child: CircularProgressIndicator(),);
+                                                              if(!snapshot.data!.exists)return Center(child: CircularProgressIndicator(),);
+                                                              Schedule schedule = Schedule.toObject(snapshot.data);
+                                                              return Padding(
+                                                                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                                                child: Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                  children: [
+                                                                    Text(CustomDayPicker.intToDay(schedule.day),style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87),),
+                                                                    Text("    "+schedule.inTimeStr,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
+                                                                    Text(schedule.outTimeStr,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
+                                                                  ],
+                                                                ),
+                                                              );
+                                                            }
+                                                        );
+                                                      }).toList(),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Divider(color: Colors.black87.withAlpha(50),),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Column(
+                                                    children: [
+                                                      Text("Late",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
+                                                      Text(late.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.amber)),
+                                                    ],
+                                                  ),
+                                                  Column(
+                                                    children: [
+                                                      Text("Present",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
+                                                      Text(present.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.green)),
+                                                    ],
+                                                  ),
+                                                  Column(
+                                                    children: [
+                                                      Text("Absent",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w100,color: Colors.black87)),
+                                                      Text(absent.toString(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold,color: Colors.redAccent)),
+                                                    ],
+                                                  ),
+                                                ],
+                                              )
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                    );
-                                  }
+
+                                    ],
+                                  );
+                                }
                               );
-
-
                             }).toList(),
                           );
                         }

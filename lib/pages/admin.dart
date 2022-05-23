@@ -116,7 +116,14 @@ class _AdminState extends State<Admin>{
                                             Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                Text(subject.name+" ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,color: Colors.white),),
+                                                SizedBox(
+                                                  width:  MediaQuery. of(context). size. width*.70,
+                                                  child: FittedBox(
+                                                    fit: BoxFit.fitHeight,
+                                                    child: Text(subject.name+" ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 10,color: Colors.white),),
+                                                  ),
+                                                ),
+                                                // Text(subject.name+" ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,color: Colors.white),),
                                                 Text(subject.id+" ",style: TextStyle(fontWeight: FontWeight.w100,fontSize: 13,color: Colors.white),),
                                                 // Text(inTime,style: TextStyle(fontWeight: FontWeight.w300,fontSize: 15),)
                                               ],
@@ -176,7 +183,11 @@ class _AdminState extends State<Admin>{
                                                             try{
                                                               instructor = validUsers.where((element) => element.id==instructor.id).first;
                                                             }catch(e){
-                                                              return Center(child: CircularProgressIndicator(),);
+                                                              if(validUsers.isNotEmpty){
+                                                                instructor = validUsers.first;
+                                                              }
+                                                              else return Center(child: CircularProgressIndicator(),);
+
                                                             }
 
                                                             return AlertDialog(
@@ -504,7 +515,14 @@ class _AdminState extends State<Admin>{
                                             Column(
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                Text(subject.name+" ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,color: Colors.white),),
+                                                SizedBox(
+                                                  width:  MediaQuery. of(context). size. width*.70,
+                                                  child: FittedBox(
+                                                    fit: BoxFit.fitWidth,
+                                                    child: Text(subject.name+" ",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 10,color: Colors.white),),
+                                                  ),
+                                                ),
+
                                                 Text(subject.id+" ",style: TextStyle(fontWeight: FontWeight.w100,fontSize: 13,color: Colors.white),),
                                                 // Text(inTime,style: TextStyle(fontWeight: FontWeight.w300,fontSize: 15),)
                                               ],

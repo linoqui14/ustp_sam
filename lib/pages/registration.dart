@@ -251,13 +251,13 @@ class _RegistrationState extends State<Registration>{
                                       fontSize: 16.0
                                   );
                                 }
+
                                 if(passwordConfirm.text.isNotEmpty&&
                                     password.text.isNotEmpty&&
                                     lname.text.isNotEmpty&&
                                     fname.text.isNotEmpty&&
                                     email.text.isNotEmpty&&
                                     mobile.text.isNotEmpty
-
                                 ){
 
                                   UserModel userModel = UserModel(courseID:course.text,section:section.text,fname: fname.text, lname: lname.text, email: email.text, mobileNumber: mobile.text, schoolID: school.text,profilePicLink: '');

@@ -226,6 +226,7 @@ class _AttendanceState extends State<AttendanceInstructor>{
     );
   }
   List<Appointment> getAppointment(){
+    var uuid = Uuid();
     List<Appointment> schedulesApt  = [];
     DateTime subjectStartDate = DateTime.fromMillisecondsSinceEpoch(widget.subject.subjectStartDate);
     schedules.forEach((sched) {
@@ -242,13 +243,22 @@ class _AttendanceState extends State<AttendanceInstructor>{
       DateTime startTime = DateTime(now.year,now.month,dayToDate(sched.day+1,DateTime.fromMillisecondsSinceEpoch(widget.subject.subjectStartDate)),hr1,min1,0);
       DateTime endTime = DateTime(now.year,now.month,dayToDate(sched.day+1,DateTime.fromMillisecondsSinceEpoch(widget.subject.subjectStartDate)),hr2,min2,0);
       //getPossible data on this schedule
-      List<DateTime> possibleDate = [];
+      List<int> possibleDate = [];
       int numberOfDaysFromStartToToday = DateTime.now().difference(subjectStartDate).inDays;
+      DateTime schedDateThisWeek = DateTime(now.year,now.month,dayToDate(sched.day+1,now));
+      for(int i = now.day,y=0;i>=startTime.day;i--,y++){
+        int dateSched = dayToDate(sched.day+1,DateTime(now.year,now.month,i));
 
-      SenSorAttendanceController.getSenSorAttendanceWhereScheduleIDANDStudentIDFuture(scheduleID: sched.id,studentID: widget.userModel.schoolID).then((value){
-        if(value.size<=0){
-          var uuid = Uuid();
-          DateTime today = DateTime.now();
+        if(!possibleDate.contains(dateSched)&&dateSched>0){
+          possibleDate.add(dateSched);
+
+          // print(dateSched);
+        }
+        // possibleDate.add(dateSched)
+
+      }
+      if(widget.sensorAttendances.isEmpty){
+        possibleDate.forEach((element) {
           SenSorAttendanceController.upSert(sensorAttendance:
           SensorAttendance(
               status: 3,
@@ -256,23 +266,61 @@ class _AttendanceState extends State<AttendanceInstructor>{
               timeIn: 0,
               subjectID: widget.subject.id,
               timeOut: 0,
-              date: startTime.year.toString()+"-"+startTime.month.toString()+"-"+startTime.day.toString(),
+              date: startTime.year.toString()+"-"+startTime.month.toString()+"-"+element.toString(),
               scheduleID:sched.id,
               userid: widget.userModel.schoolID,
               isTexted: false
-          ));
-        }
-        else{
-          // print(value.size);
-        }
-        value.docs.forEach((sesonrAtt) {
-          SensorAttendance sensorAttendance = SensorAttendance.toObject(sesonrAtt.data());
-          if(sensorAttendance.userid==widget.userModel.schoolID){
-
-          }
-
+          )
+          );
         });
-      });
+      }
+      // if(widget.sensorAttendances.isNotEmpty){
+      //   if(widget.sensorAttendances.where((element){
+      //     DateTime date = DateTime.now();
+      //     try{
+      //       date = DateTime.parse(element.date);
+      //     }catch(e){
+      //       List<String >tempdate = element.date.split("-");
+      //       String dateStr = "";
+      //       if( tempdate[1].length==1){
+      //         tempdate[1] = "0"+tempdate[1];
+      //       }
+      //       if( tempdate[2].length==1){
+      //         tempdate[2] = "0"+tempdate[2];
+      //       }
+      //       dateStr+=tempdate[0]+"-"+tempdate[1]+"-"+tempdate[2];
+      //       date = DateTime.parse(dateStr);
+      //     }
+      //     //absent if adlaw karon is mas dako sa adlaw sa
+      //     bool isTrue = date.year==startTime.year&&date.month==startTime.month&&date.day==startTime.day;
+      //     return isTrue;
+      //
+      //   }).isEmpty){
+      //     if(startTime.day<DateTime.now().day){
+      //       var uuid = Uuid();
+      //       int start = (startTime.hour*60)+startTime.minute;
+      //       int nowStart = (DateTime.now().hour*60)+DateTime.now().minute;
+      //       if((nowStart-start)>30){
+      //         SenSorAttendanceController.upSert(sensorAttendance:
+      //         SensorAttendance(
+      //             status: 3,
+      //             id: uuid.v1(),
+      //             timeIn: 0,
+      //             subjectID: widget.subject.id,
+      //             timeOut: 0,
+      //             date: startTime.year.toString()+"-"+startTime.month.toString()+"-"+startTime.day.toString(),
+      //             scheduleID:sched.id,
+      //             userid: widget.userModel.schoolID,
+      //             isTexted: false
+      //         )
+      //         );
+      //       }
+      //     }
+      //
+      //   }
+      // }
+
+
       widget.sensorAttendances.forEach((element) {
         DateTime date = DateTime.now();
         try{
@@ -286,9 +334,6 @@ class _AttendanceState extends State<AttendanceInstructor>{
           if(tempdate[2].length==1){
             tempdate[2] = "0"+tempdate[2];
           }
-
-
-
           dateStr+=tempdate[0]+"-"+tempdate[1]+"-"+tempdate[2];
           date = DateTime.parse(dateStr);
         }
@@ -307,8 +352,8 @@ class _AttendanceState extends State<AttendanceInstructor>{
           }
           schedulesApt.add(
               Appointment(
-                  startTime:date.add(Duration(hours: startTime.hour,minutes: startTime.minute)),
-                  endTime: endTime,
+                  startTime:date.add(Duration(minutes: sched.inTime)),
+                  endTime: date.add(Duration(minutes: sched.outTime)),
                   subject: sched.room+"\n"+sched.inTimeStr+"\n"+sched.outTimeStr,
                   color: color
               )
@@ -344,36 +389,17 @@ class _AttendanceState extends State<AttendanceInstructor>{
           break;
       }
 
-      if(sensorAttendance==null){
-        schedulesApt.add(
-            Appointment(
-                startTime:startTime,
-                endTime: endTime,
-                subject: sched.room+"\n"+sched.inTimeStr+"\n"+sched.outTimeStr,
-                recurrenceRule: "FREQ=WEEKLY;INTERVAL=1;BYDAY="+day+";COUNT=23",
-                color: Colors.white.withAlpha(50)
-            )
-        );
-      }
-      else{
-        schedulesApt.add(
-            Appointment(
-                startTime:startTime.add(Duration(days: 7)),
-                endTime: endTime.add(Duration(days: 7)),
-                subject: sched.room+"\n"+sched.inTimeStr+"\n"+sched.outTimeStr,
-                recurrenceRule: "FREQ=WEEKLY;INTERVAL=1;BYDAY="+day+";COUNT=22",
-                color: Colors.white.withAlpha(50)
-            )
-        );
-      }
 
 
-
-
-
-
-
-
+      // schedulesApt.add(
+      //     Appointment(
+      //         startTime:startTime.add(Duration(days: 7)),
+      //         endTime: endTime.add(Duration(days: 7)),
+      //         subject: sched.room+"\n"+sched.inTimeStr+"\n"+sched.outTimeStr,
+      //         recurrenceRule: "FREQ=WEEKLY;INTERVAL="+1.toString()+";BYDAY="+day+";COUNT=22",
+      //         color: Colors.white.withAlpha(50)
+      //     )
+      // );
 
     });
 

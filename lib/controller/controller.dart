@@ -26,6 +26,9 @@ class UserController{
   static Stream<QuerySnapshot> getValidUserWhereSubjectID({required String subjectID}){
     return users.where("subjectIDs",arrayContains: subjectID).snapshots();
   }
+  static Future<QuerySnapshot> getValidUserWhereSubjectIDFuture({required String subjectID}){
+    return users.where("subjectIDs",arrayContains: subjectID).get();
+  }
 
   static void upSert({required UserModel user}){
     users.doc(user.schoolID).set(user.toMap());
